@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>tifytube</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="top">
+      <div id="spotifySetting">
+        <h2>Spotify Setting</h2>
+        <a
+          href="https://developer.spotify.com/dashboard/applications"
+          target="_blank"
+          >Spotify Developer Dashboard</a
+        >
+
+        <form id="spotifyCredForm">
+          <label for="clientId">CLIENT ID:</label>
+          <input type="text" id="clientId" name="clientId" /><br />
+          <label for="clientSecret">CLIENT SECRET:</label>
+          <input type="text" id="clientSecret" name="clientSecret" /><br />
+          <input type="submit" value="Submit" />
+        </form>
+      </div>
+
+      <div id="spotifyFeatures">
+        <h2>Spotify Features</h2>
+        <button id="searchAlbum">Search Album</button>
+        <button id="searchArtist">Search Artist</button>
+        <button id="searchTrack">Search Track</button>
+        <button id="searchPlaylist">Search Playlist</button>
+        <button id="featuredPlaylists">Featured Playlists</button>
+        <button id="myPlaylist">My Playlist</button><br />
+
+        <br />
+        <label for="searchInput">Search:</label>
+        <input
+          type="text"
+          id="searchInput"
+          name="searchInput"
+          placeholder="NewJeans"
+        />
+      </div>
+    </div>
+
+    <button onclick="checkCred()">Check Cred</button>
+
+    <h2>Youtube Player</h2>
+    <div id="youtubePlayer"></div>
+
+    <h2>Spotify Search</h2>
+    <button id="addToPlaylist">Add Playlist</button>
+    <button id="allCheck">ALL Check</button>
+    <div id="musicTable"></div>
+  </body>
+  <script src="js/jquery-3.7.1.min.js"></script>
+  <script src="js/spotify.js"></script>
+  <script src="js/youtube.js"></script>
+  <script src="js/util.js"></script>
+  <script>
+    // 앨범, 제목 영역은 모든 기능에 사용되기 떄문에 공통으로 분리하고 각 기능마다 table 옆에 추가하는 식으로 만들어야 할듯
+    function getSearchInput() {
+      let searchInput = document.getElementById("searchInput").value;
+      if (searchInput == "") {
+        alert("Please Input value");
+        return null;
+      }
+      return searchInput;
+    }
+
+    document
+      .getElementById("spotifyCredForm")
+      .addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        let clientId = document.getElementById("clientId").value;
+        let clientSecret = document.getElementById("clientSecret").value;
+
+        if (clientId && clientSecret) {
+          localStorage.setItem("CLIENT_ID", clientId);
+          localStorage.setItem("CLIENT_SECRET", clientSecret);
+          alert("Spotify Saved");
+        }
+      });
+
+    document
+      .getElementById("searchAlbum")
+      .addEventListener("click", function () {
+        searchAlbum(getSearchInput(), function (response) {
+          let musicTable = document.getElementById("musicTable");
+          musicTable.innerHTML = "";
+
+          let resultTable = document.createElement("table");
+          response.albums.items.forEach((element) => {
+            let tr = document.createElement("tr");
+            tr.appendChild(createImageCell(element.images[0]?.url));
+            tr.appendChild(createCell(element.name));
+            tr.appendChild(createCell(arrToString(element.artists, "name")));
+            resultTable.appendChild(tr);
+
+            // 앨범 클릭 시 해당 앨범의 트랙 검색
+            tr.addEventListener("click", function () {
+              searchAlbumInTrack(element.id, function (response) {
+                musicTable.innerHTML = "";
+                let resultTable = document.createElement("table");
+
+                response.tracks.items.forEach((song) => {
+                  resultTable.appendChild(
+                    trackTableSetting(
+                      element.images[0]?.url,
+                      song.name,
+                      song.artists
+                    )
+                  );
+                });
+                musicTable.appendChild(resultTable);
+              });
+            });
+          });
+          musicTable.appendChild(resultTable);
+        });
+      });
+
+    document
+      .getElementById("searchArtist")
+      .addEventListener("click", function () {
+        searchArtist(getSearchInput(), function (response) {
+          let musicTable = document.getElementById("musicTable");
+          musicTable.innerHTML = "";
+
+          let resultTable = document.createElement("table");
+          response.artists.items.forEach((element) => {
+            let tr = document.createElement("tr");
+            tr.appendChild(createImageCell(element.images[0]?.url));
+            tr.appendChild(createCell(element.name));
+            resultTable.appendChild(tr);
+
+            tr.addEventListener("click", function () {
+              searchArtistInTrack(element.id, function (response) {
+                musicTable.innerHTML = "";
+                let resultTable = document.createElement("table");
+
+                response.tracks.forEach((song) => {
+                  resultTable.appendChild(
+                    trackTableSetting(
+                      element.images[0]?.url,
+                      song.name,
+                      song.artists
+                    )
+                  );
+                });
+                musicTable.appendChild(resultTable);
+              });
+            });
+          });
+          musicTable.appendChild(resultTable);
+        });
+      });
+
+    document
+      .getElementById("searchTrack")
+      .addEventListener("click", function () {
+        searchTrack(getSearchInput(), function (response) {
+          let musicTable = document.getElementById("musicTable");
+          musicTable.innerHTML = "";
+
+          let resultTable = document.createElement("table");
+          response.tracks.items.forEach((element) => {
+            resultTable.appendChild(
+              trackTableSetting(
+                element.album.images[0]?.url,
+                element.name,
+                element.artists
+              )
+            );
+          });
+          musicTable.appendChild(resultTable);
+        });
+      });
+
+    document
+      .getElementById("searchPlaylist")
+      .addEventListener("click", function () {
+        searchPlaylist(getSearchInput(), function (response) {
+          let musicTable = document.getElementById("musicTable");
+          musicTable.innerHTML = "";
+
+          let resultTable = document.createElement("table");
+          response.playlists.items.forEach((element) => {
+            let tr = document.createElement("tr");
+            tr.appendChild(createImageCell(element.images[0]?.url));
+            tr.appendChild(createCell(element.name));
+            tr.appendChild(createCell(element.description));
+            resultTable.appendChild(tr);
+
+            tr.addEventListener("click", function () {
+              searchPlaylistInTrack(element.id, function (response) {
+                musicTable.innerHTML = "";
+                let resultTable = document.createElement("table");
+
+                response.tracks.items.forEach((song) => {
+                  if (song.track != null) {
+                    resultTable.appendChild(
+                      trackTableSetting(
+                        element.images[0]?.url,
+                        song.track.name,
+                        song.track.artists
+                      )
+                    );
+                  }
+                });
+                musicTable.appendChild(resultTable);
+              });
+            });
+          });
+          musicTable.appendChild(resultTable);
+        });
+      });
+
+    document
+      .getElementById("featuredPlaylists")
+      .addEventListener("click", function () {
+        getFeaturedPlaylists(function (response) {
+          let musicTable = document.getElementById("musicTable");
+          musicTable.innerHTML = "";
+
+          let resultTable = document.createElement("table");
+          response.playlists.items.forEach((element) => {
+            let tr = document.createElement("tr");
+            tr.appendChild(createImageCell(element.images[0]?.url));
+            tr.appendChild(createCell(element.description));
+            resultTable.appendChild(tr);
+
+            tr.addEventListener("click", function () {
+              searchPlaylistInTrack(element.id, function (response) {
+                musicTable.innerHTML = "";
+                let resultTable = document.createElement("table");
+
+                response.tracks.items.forEach((song) => {
+                  if (song.track != null) {
+                    resultTable.appendChild(
+                      trackTableSetting(
+                        element.images[0]?.url,
+                        song.track.name,
+                        song.track.artists
+                      )
+                    );
+                  }
+                });
+                musicTable.appendChild(resultTable);
+              });
+            });
+          });
+          musicTable.appendChild(resultTable);
+        });
+      });
+
+    document
+      .getElementById("myPlaylist")
+      .addEventListener("click", function () {
+        let openRequest = indexedDB.open("myDatabase", 1);
+
+        openRequest.onsuccess = function () {
+          let db = openRequest.result;
+          let playlists = db
+            .transaction("playlists", "readwrite")
+            .objectStore("playlists");
+
+          let getRequest = playlists.get("myPlaylist");
+
+          getRequest.onsuccess = function () {
+            let playlist = getRequest.result || [];
+            let musicTable = document.getElementById("musicTable");
+            musicTable.innerHTML = "";
+
+            let resultTable = document.createElement("table");
+            for (let song of playlist) {
+              let tr = document.createElement("tr");
+              tr.appendChild(createImageCell(song.image));
+              tr.appendChild(createCell(song.title));
+              tr.appendChild(createCell(song.artist));
+              resultTable.appendChild(tr);
+
+              tr.addEventListener("click", function () {
+                loadVideo(song.artist, song.title);
+              });
+            }
+            musicTable.appendChild(resultTable);
+          };
+          getRequest.onerror = function () {
+            console.error("Error: ", getRequest.error);
+          };
+        };
+      });
+
+    document
+      .getElementById("addToPlaylist")
+      .addEventListener("click", function () {
+        let checkboxes = document.querySelectorAll(
+          'input[type="checkbox"]:checked'
+        );
+
+        let playlist = [];
+        checkboxes.forEach((checkbox) => {
+          let row = checkbox.parentElement.parentElement;
+          let image = row.cells[0].querySelector("img").src;
+          let title = row.cells[1].textContent;
+          let artist = row.cells[2].textContent;
+          playlist.push({ image: image, title: title, artist: artist });
+        });
+
+        // IndexedDB에 플레이리스트 저장
+        let openRequest = indexedDB.open("myDatabase", 1);
+
+        openRequest.onupgradeneeded = function () {
+          let db = openRequest.result;
+          if (!db.objectStoreNames.contains("playlists")) {
+            db.createObjectStore("playlists");
+          }
+        };
+
+        openRequest.onerror = function () {
+          console.error("Error: ", openRequest.error);
+        };
+
+        openRequest.onsuccess = function () {
+          let db = openRequest.result;
+          let playlists = db
+            .transaction("playlists", "readwrite")
+            .objectStore("playlists");
+
+          let getRequest = playlists.get("myPlaylist");
+
+          getRequest.onsuccess = function () {
+            let oldPlaylist = getRequest.result || [];
+            let newPlaylist = oldPlaylist;
+
+            // 기존 플레이리스트에 없는 곡만 추가
+            for (let newSong of playlist) {
+              if (
+                !oldPlaylist.find(
+                  (song) =>
+                    song.title === newSong.title &&
+                    song.artist === newSong.artist
+                )
+              ) {
+                newPlaylist.push(newSong);
+              }
+            }
+
+            let putRequest = playlists.put(newPlaylist, "myPlaylist");
+
+            putRequest.onsuccess = function () {
+              alert("Added to Playlist");
+            };
+
+            putRequest.onerror = function () {
+              console.error("Error: ", putRequest.error);
+            };
+          };
+
+          getRequest.onerror = function () {
+            console.error("Error: ", getRequest.error);
+          };
+        };
+      });
+
+    document.getElementById("allCheck").addEventListener("click", function () {
+      let checkboxes = document.querySelectorAll('input[type="checkbox"]');
+      checkboxes.forEach((checkbox) => {
+        checkbox.checked = checkbox.checked ? false : true;
+      });
+    });
+  </script>
+</html>
