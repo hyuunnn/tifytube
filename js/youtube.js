@@ -1,6 +1,3 @@
-let player;
-let index = 0;
-let table;
 let apiServers = [
   //   "https://pipedapi.kavin.rocks/", very slow
   "https://pipedapi.leptons.xyz/",
