@@ -36,9 +36,9 @@ function createCheckboxCell(name) {
   return td;
 }
 
-function trackTableSetting(image_url, name, artist) {
+function trackTableSetting(imageUrl, name, artist) {
   let tr = document.createElement("tr");
-  let img = createImageCell(image_url);
+  let img = createImageCell(imageUrl);
   tr.appendChild(img);
   tr.appendChild(createCell(name));
   tr.appendChild(createCell(arrToString(artist, "name")));
