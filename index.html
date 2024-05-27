@@ -57,6 +57,7 @@
 
     <h2>Spotify Search</h2>
     <button id="addToPlaylist">Add Playlist</button>
+    <button id="removePlaylist">Remove Playlist</button>
     <button id="allCheck">ALL Check</button>
     <div id="musicTable"></div>
   </body>
@@ -72,6 +73,59 @@
         return null;
       }
       return searchInput;
+    }
+
+    function openDatabase(callback) {
+      let openRequest = indexedDB.open("myDatabase", 1);
+
+      openRequest.onupgradeneeded = function () {
+        let db = openRequest.result;
+        if (!db.objectStoreNames.contains("playlists")) {
+          db.createObjectStore("playlists");
+        }
+      };
+
+      openRequest.onerror = function () {
+        console.error("Error: ", openRequest.error);
+      };
+
+      openRequest.onsuccess = function () {
+        let db = openRequest.result;
+        callback(db);
+      };
+    }
+
+    function getPlaylist(db, callback) {
+      let playlists = db
+        .transaction("playlists", "readwrite")
+        .objectStore("playlists");
+
+      let getRequest = playlists.get("myPlaylist");
+
+      getRequest.onsuccess = function () {
+        let playlist = getRequest.result || [];
+        callback(playlist);
+      };
+
+      getRequest.onerror = function () {
+        console.error("Error: ", getRequest.error);
+      };
+    }
+
+    function updatePlaylist(db, playlist) {
+      let playlists = db
+        .transaction("playlists", "readwrite")
+        .objectStore("playlists");
+
+      let putRequest = playlists.put(playlist, "myPlaylist");
+
+      putRequest.onsuccess = function () {
+        alert("Updated to Playlist");
+      };
+
+      putRequest.onerror = function () {
+        console.error("Error: ", putRequest.error);
+      };
     }
 
     document
@@ -264,39 +318,21 @@
     document
       .getElementById("myPlaylist")
       .addEventListener("click", function () {
-        let openRequest = indexedDB.open("myDatabase", 1);
 
-        openRequest.onsuccess = function () {
-          let db = openRequest.result;
-          let playlists = db
-            .transaction("playlists", "readwrite")
-            .objectStore("playlists");
-
-          let getRequest = playlists.get("myPlaylist");
-
-          getRequest.onsuccess = function () {
-            let playlist = getRequest.result || [];
+        openDatabase(function (db) {
+          getPlaylist(db, function (playlist) {
             let musicTable = document.getElementById("musicTable");
             musicTable.innerHTML = "";
 
             let resultTable = document.createElement("table");
             for (let song of playlist) {
-              let tr = document.createElement("tr");
-              tr.appendChild(createImageCell(song.image));
-              tr.appendChild(createCell(song.title));
-              tr.appendChild(createCell(song.artist));
-              resultTable.appendChild(tr);
-
-              tr.addEventListener("click", function () {
-                loadVideo(song.artist, song.title);
-              });
+              resultTable.appendChild(
+                trackTableSetting(song.image, song.title, song.artist)
+              );
             }
             musicTable.appendChild(resultTable);
-          };
-          getRequest.onerror = function () {
-            console.error("Error: ", getRequest.error);
-          };
-        };
+          });
+        });
       });
 
     document
@@ -315,30 +351,8 @@
           playlist.push({ image: image, title: title, artist: artist });
         });
 
-        // IndexedDB에 플레이리스트 저장
-        let openRequest = indexedDB.open("myDatabase", 1);
-
-        openRequest.onupgradeneeded = function () {
-          let db = openRequest.result;
-          if (!db.objectStoreNames.contains("playlists")) {
-            db.createObjectStore("playlists");
-          }
-        };
-
-        openRequest.onerror = function () {
-          console.error("Error: ", openRequest.error);
-        };
-
-        openRequest.onsuccess = function () {
-          let db = openRequest.result;
-          let playlists = db
-            .transaction("playlists", "readwrite")
-            .objectStore("playlists");
-
-          let getRequest = playlists.get("myPlaylist");
-
-          getRequest.onsuccess = function () {
-            let oldPlaylist = getRequest.result || [];
+        openDatabase(function (db) {
+          getPlaylist(db, function (oldPlaylist) {
             let newPlaylist = oldPlaylist;
 
             // 기존 플레이리스트에 없는 곡만 추가
@@ -354,10 +368,58 @@
               }
             }
 
+            updatePlaylist(db, newPlaylist);
+          });
+        });
+      });
+
+    document.getElementById("allCheck").addEventListener("click", function () {
+      let checkboxes = document.querySelectorAll('input[type="checkbox"]');
+      checkboxes.forEach((checkbox) => {
+        checkbox.checked = checkbox.checked ? false : true;
+      });
+    });
+
+    document
+      .getElementById("removePlaylist")
+      .addEventListener("click", function () {
+        let checkboxes = document.querySelectorAll(
+          'input[type="checkbox"]:checked'
+        );
+
+        let playlist = [];
+        checkboxes.forEach((checkbox) => {
+          let row = checkbox.parentElement.parentElement;
+          let image = row.cells[0].querySelector("img").src;
+          let title = row.cells[1].textContent;
+          let artist = row.cells[2].textContent;
+          playlist.push({ image: image, title: title, artist: artist });
+        });
+
+        let openRequest = indexedDB.open("myDatabase", 1);
+
+        openRequest.onsuccess = function () {
+          let db = openRequest.result;
+          let playlists = db
+            .transaction("playlists", "readwrite")
+            .objectStore("playlists");
+
+          let getRequest = playlists.get("myPlaylist");
+
+          getRequest.onsuccess = function () {
+            let oldPlaylist = getRequest.result || [];
+            let newPlaylist = oldPlaylist.filter((song) => {
+              return !playlist.find(
+                (removeSong) =>
+                  song.title === removeSong.title &&
+                  song.artist === removeSong.artist
+              );
+            });
+
             let putRequest = playlists.put(newPlaylist, "myPlaylist");
 
             putRequest.onsuccess = function () {
-              alert("Added to Playlist");
+              alert("Removed from Playlist");
             };
 
             putRequest.onerror = function () {
@@ -370,12 +432,5 @@
           };
         };
       });
-
-    document.getElementById("allCheck").addEventListener("click", function () {
-      let checkboxes = document.querySelectorAll('input[type="checkbox"]');
-      checkboxes.forEach((checkbox) => {
-        checkbox.checked = checkbox.checked ? false : true;
-      });
-    });
   </script>
 </html>

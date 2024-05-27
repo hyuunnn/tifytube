@@ -36,15 +36,18 @@ function createCheckboxCell(name) {
   return td;
 }
 
-function trackTableSetting(imageUrl, name, artist) {
+function trackTableSetting(imageUrl, name, artist = null) {
   let tr = document.createElement("tr");
   let img = createImageCell(imageUrl);
   tr.appendChild(img);
   tr.appendChild(createCell(name));
-  tr.appendChild(createCell(arrToString(artist, "name")));
+
+  let artistName = Array.isArray(artist) ? arrToString(artist, "name") : artist;
+  tr.appendChild(createCell(artistName));
   tr.appendChild(createCheckboxCell(name));
+
   img.addEventListener("click", function () {
-    loadVideo(arrToString(artist, "name"), name);
+    loadVideo(artistName, name);
   });
   return tr;
 }
