@@ -5,14 +5,15 @@
     <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
-    <div class="top">
-      <div id="spotifySetting">
-        <h2>Spotify Setting</h2>
-        <a
-          href="https://developer.spotify.com/dashboard/applications"
-          target="_blank"
-          >Spotify Developer Dashboard</a
-        >
+    <div class="container">
+      <div class="sidebar">
+        <h2>
+          <a
+            href="https://developer.spotify.com/dashboard/applications"
+            target="_blank"
+            >Spotify Setting</a
+          >
+        </h2>
 
         <form id="spotifyCredForm">
           <input
@@ -20,46 +21,50 @@
             id="clientId"
             name="clientId"
             placeholder="CLIENT ID"
-          /><br />
+          />
           <input
             type="text"
             id="clientSecret"
             name="clientSecret"
             placeholder="CLIENT SECRET"
-          /><br />
+          />
           <button type="submit">Submit</button>
+          <button type="button" onclick="checkCred()">Check Cred</button>
         </form>
-      </div>
+        <br />
 
-      <div id="spotifyFeatures">
         <h2>Spotify Features</h2>
-        <button id="searchAlbum">Search Album</button>
-        <button id="searchArtist">Search Artist</button>
-        <button id="searchTrack">Search Track</button>
-        <button id="searchPlaylist">Search Playlist</button>
-        <button id="featuredPlaylists">Featured Playlists</button>
-        <button id="myPlaylist">My Playlist</button>
-        <button onclick="checkCred()">Check Cred</button>
-        <br />
-
-        <br />
         <input
           type="text"
           id="searchInput"
           name="searchInput"
           placeholder="Search (ex: NewJeans)"
         />
+
+        <div class="button-group">
+          <button id="searchAlbum">Search Album</button>
+          <button id="searchArtist">Search Artist</button>
+          <button id="searchTrack">Search Track</button>
+          <button id="searchPlaylist">Search Playlist</button>
+          <button id="featuredPlaylists">Featured Playlists</button>
+          <button id="myPlaylist">My Playlist</button>
+        </div>
+      </div>
+
+      <div class="content">
+        <h2>YouTube Player</h2>
+        <div id="youtubePlayer"></div>
+        <br />
+
+        <h2>Spotify Search</h2>
+        <div class="button-group">
+          <button id="addToPlaylist">Add Playlist</button>
+          <button id="removePlaylist">Remove Playlist</button>
+          <button id="allCheck">ALL Check</button>
+        </div>
+        <div id="musicTable"></div>
       </div>
     </div>
-
-    <h2>Youtube Player</h2>
-    <div id="youtubePlayer"></div>
-
-    <h2>Spotify Search</h2>
-    <button id="addToPlaylist">Add Playlist</button>
-    <button id="removePlaylist">Remove Playlist</button>
-    <button id="allCheck">ALL Check</button>
-    <div id="musicTable"></div>
   </body>
   <script src="js/jquery-3.7.1.min.js"></script>
   <script src="js/spotify.js"></script>
@@ -85,13 +90,13 @@
         }
       };
 
-      openRequest.onerror = function () {
-        console.error("Error: ", openRequest.error);
-      };
-
       openRequest.onsuccess = function () {
         let db = openRequest.result;
         callback(db);
+      };
+
+      openRequest.onerror = function () {
+        console.error("Error: ", openRequest.error);
       };
     }
 
@@ -242,8 +247,8 @@
       .getElementById("searchPlaylist")
       .addEventListener("click", function () {
         searchPlaylist(getSearchInput(), function (response) {
-          let musicTable = document.getElementById("musicTable");
           musicTable.innerHTML = "";
+          let musicTable = document.getElementById("musicTable");
 
           let resultTable = document.createElement("table");
           response.playlists.items.forEach((element) => {
@@ -318,7 +323,6 @@
     document
       .getElementById("myPlaylist")
       .addEventListener("click", function () {
-
         openDatabase(function (db) {
           getPlaylist(db, function (playlist) {
             let musicTable = document.getElementById("musicTable");
