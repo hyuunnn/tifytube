@@ -1,4 +1,4 @@
-function checkCred() {
+function checkAuth() {
   alert(
     "CLIENT_ID: " +
       localStorage.getItem("CLIENT_ID") +
