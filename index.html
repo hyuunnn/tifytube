@@ -1,71 +1,51 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>tifytube</title>
-    <link rel="stylesheet" href="css/style.css" />
-  </head>
-  <body>
-    <div class="container">
-      <div class="sidebar">
-        <h2>Spotify Setting</h2>
-          <a
-            href="https://developer.spotify.com/dashboard/applications"
-            target="_blank"
-            >Spotify Developer Dashboard</a
-          >
-          <br />
+<head>
+  <title>tifytube</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="sidebar">
+      <h2>Spotify Setting</h2>
+      <a href="https://developer.spotify.com/dashboard/applications" target="_blank">Spotify Developer Dashboard</a>
+      <br />
 
-        <form id="spotifyCredForm">
-          <input
-            type="text"
-            id="clientId"
-            name="clientId"
-            placeholder="CLIENT ID"
-          />
-          <input
-            type="text"
-            id="clientSecret"
-            name="clientSecret"
-            placeholder="CLIENT SECRET"
-          />
-          <button type="submit">Submit</button>
-          <button type="button" onclick="checkAuth()">Check Auth</button>
-        </form>
-        <br />
+      <form id="spotifyCredForm">
+        <input type="text" id="clientId" name="clientId" placeholder="CLIENT ID" />
+        <input type="text" id="clientSecret" name="clientSecret" placeholder="CLIENT SECRET" />
+        <button type="submit">Submit</button>
+        <button type="button" onclick="checkAuth()">Check Auth</button>
+      </form>
+      <br />
 
-        <h2>Spotify Features</h2>
-        <input
-          type="text"
-          id="searchInput"
-          name="searchInput"
-          placeholder="Search (ex: NewJeans)"
-        />
+      <h2>Spotify Features</h2>
+      <input type="text" id="searchInput" name="searchInput" placeholder="Search (ex: NewJeans)" />
 
-        <div class="button-group">
-          <button id="searchAlbum">Search Album</button>
-          <button id="searchArtist">Search Artist</button>
-          <button id="searchTrack">Search Track</button>
-          <button id="searchPlaylist">Search Playlist</button>
-          <button id="featuredPlaylists">Featured Playlists</button>
-          <button id="myPlaylist">My Playlist</button>
-        </div>
-      </div>
-
-      <div class="content">
-        <h2>YouTube Player</h2>
-        <div id="youtubePlayer"></div>
-        <br />
-
-        <h2>Spotify Search</h2>
-        <div class="button-group">
-          <button id="addToPlaylist">Add Playlist</button>
-          <button id="removePlaylist">Remove Playlist</button>
-          <button id="allCheck">ALL Check</button>
-        </div>
-        <div id="musicTable"></div>
+      <div class="button-group">
+        <button id="searchAlbum">Search Album</button>
+        <button id="searchArtist">Search Artist</button>
+        <button id="searchTrack">Search Track</button>
+        <button id="searchPlaylist">Search Playlist</button>
+        <button id="featuredPlaylists">Featured Playlists</button>
+        <button id="myPlaylist">My Playlist</button>
       </div>
     </div>
-  </body>
+
+    <div class="content">
+      <h2>YouTube Player</h2>
+      <div id="youtubePlayer"></div>
+      <br />
+
+      <h2>Spotify Search</h2>
+      <div class="button-group">
+        <button id="addToPlaylist">Add Playlist</button>
+        <button id="removePlaylist">Remove Playlist</button>
+        <button id="allCheck">ALL Check</button>
+      </div>
+      <div id="musicTable"></div>
+    </div>
+  </div>
   <script src="js/jquery-3.7.1.min.js"></script>
   <script src="js/spotify.js"></script>
   <script src="js/youtube.js"></script>
@@ -106,7 +86,6 @@
         .objectStore("playlists");
 
       let getRequest = playlists.get("myPlaylist");
-
       getRequest.onsuccess = function () {
         let playlist = getRequest.result || [];
         callback(playlist);
@@ -123,7 +102,6 @@
         .objectStore("playlists");
 
       let putRequest = playlists.put(playlist, "myPlaylist");
-
       putRequest.onsuccess = function () {
         alert("Updated to Playlist");
       };
@@ -133,251 +111,201 @@
       };
     }
 
-    document
-      .getElementById("spotifyCredForm")
-      .addEventListener("submit", function (e) {
-        e.preventDefault();
+    document.getElementById("spotifyCredForm").addEventListener("submit", function (e) {
+      e.preventDefault();
 
-        let clientId = document.getElementById("clientId").value;
-        let clientSecret = document.getElementById("clientSecret").value;
+      let clientId = document.getElementById("clientId").value;
+      let clientSecret = document.getElementById("clientSecret").value;
 
-        if (clientId && clientSecret) {
-          localStorage.setItem("CLIENT_ID", clientId);
-          localStorage.setItem("CLIENT_SECRET", clientSecret);
-          alert("Spotify Saved");
-        } else {
-          alert("Please Input value");
-        }
-      });
+      if (clientId && clientSecret) {
+        localStorage.setItem("CLIENT_ID", clientId);
+        localStorage.setItem("CLIENT_SECRET", clientSecret);
+        alert("Spotify Saved");
+      } else {
+        alert("Please Input value");
+      }
+    });
 
-    document
-      .getElementById("searchAlbum")
-      .addEventListener("click", function () {
-        searchAlbum(getSearchInput(), function (response) {
-          let musicTable = document.getElementById("musicTable");
-          musicTable.innerHTML = "";
+    document.getElementById("searchAlbum").addEventListener("click", function () {
+      searchAlbum(getSearchInput(), function (response) {
+        let musicTable = document.getElementById("musicTable");
+        musicTable.innerHTML = "";
 
-          let resultTable = document.createElement("table");
-          response.albums.items.forEach((element) => {
-            let tr = document.createElement("tr");
-            tr.appendChild(createImageCell(element.images[0]?.url));
-            tr.appendChild(createCell(element.name));
-            tr.appendChild(createCell(arrToString(element.artists, "name")));
-            resultTable.appendChild(tr);
+        let resultTable = document.createElement("table");
+        response.albums.items.forEach((element) => {
+          let tr = document.createElement("tr");
+          tr.appendChild(createImageCell(element.images[0]?.url));
+          tr.appendChild(createCell(element.name));
+          tr.appendChild(createCell(arrToString(element.artists, "name")));
+          resultTable.appendChild(tr);
 
-            // 앨범 클릭 시 해당 앨범의 트랙 검색
-            tr.addEventListener("click", function () {
-              searchAlbumInTrack(element.id, function (response) {
-                musicTable.innerHTML = "";
-                let resultTable = document.createElement("table");
+          // 앨범 클릭 시 해당 앨범의 트랙 검색
+          tr.addEventListener("click", function () {
+            searchAlbumInTrack(element.id, function (response) {
+              musicTable.innerHTML = "";
+              let resultTable = document.createElement("table");
 
-                response.tracks.items.forEach((song) => {
-                  resultTable.appendChild(
-                    trackTableSetting(
-                      element.images[0]?.url,
-                      song.name,
-                      song.artists
-                    )
-                  );
-                });
-                musicTable.appendChild(resultTable);
+              response.tracks.items.forEach((song) => {
+                resultTable.appendChild(trackTableSetting(
+                  element.images[0]?.url, song.name, song.artists));
               });
+              musicTable.appendChild(resultTable);
             });
           });
-          musicTable.appendChild(resultTable);
         });
+        musicTable.appendChild(resultTable);
       });
+    });
 
-    document
-      .getElementById("searchArtist")
-      .addEventListener("click", function () {
-        searchArtist(getSearchInput(), function (response) {
-          let musicTable = document.getElementById("musicTable");
-          musicTable.innerHTML = "";
+    document.getElementById("searchArtist").addEventListener("click", function () {
+      searchArtist(getSearchInput(), function (response) {
+        let musicTable = document.getElementById("musicTable");
+        musicTable.innerHTML = "";
 
-          let resultTable = document.createElement("table");
-          response.artists.items.forEach((element) => {
-            let tr = document.createElement("tr");
-            tr.appendChild(createImageCell(element.images[0]?.url));
-            tr.appendChild(createCell(element.name));
-            resultTable.appendChild(tr);
+        let resultTable = document.createElement("table");
+        response.artists.items.forEach((element) => {
+          let tr = document.createElement("tr");
+          tr.appendChild(createImageCell(element.images[0]?.url));
+          tr.appendChild(createCell(element.name));
+          resultTable.appendChild(tr);
 
-            tr.addEventListener("click", function () {
-              searchArtistInTrack(element.id, function (response) {
-                musicTable.innerHTML = "";
-                let resultTable = document.createElement("table");
+          tr.addEventListener("click", function () {
+            searchArtistInTrack(element.id, function (response) {
+              musicTable.innerHTML = "";
+              let resultTable = document.createElement("table");
 
-                response.tracks.forEach((song) => {
-                  resultTable.appendChild(
-                    trackTableSetting(
-                      element.images[0]?.url,
-                      song.name,
-                      song.artists
-                    )
-                  );
-                });
-                musicTable.appendChild(resultTable);
+              response.tracks.forEach((song) => {
+                resultTable.appendChild(trackTableSetting(
+                  element.images[0]?.url, song.name, song.artists));
               });
+              musicTable.appendChild(resultTable);
             });
           });
-          musicTable.appendChild(resultTable);
         });
+        musicTable.appendChild(resultTable);
       });
+    });
 
-    document
-      .getElementById("searchTrack")
-      .addEventListener("click", function () {
-        searchTrack(getSearchInput(), function (response) {
-          let musicTable = document.getElementById("musicTable");
-          musicTable.innerHTML = "";
+    document.getElementById("searchTrack").addEventListener("click", function () {
+      searchTrack(getSearchInput(), function (response) {
+        let musicTable = document.getElementById("musicTable");
+        musicTable.innerHTML = "";
 
-          let resultTable = document.createElement("table");
-          response.tracks.items.forEach((element) => {
-            resultTable.appendChild(
-              trackTableSetting(
-                element.album.images[0]?.url,
-                element.name,
-                element.artists
-              )
-            );
-          });
-          musicTable.appendChild(resultTable);
+        let resultTable = document.createElement("table");
+        response.tracks.items.forEach((element) => {
+          resultTable.appendChild(trackTableSetting(
+            element.album.images[0]?.url, element.name, element.artists));
         });
+        musicTable.appendChild(resultTable);
       });
+    });
 
-    document
-      .getElementById("searchPlaylist")
-      .addEventListener("click", function () {
-        searchPlaylist(getSearchInput(), function (response) {
-          let musicTable = document.getElementById("musicTable");
-          musicTable.innerHTML = "";
+    document.getElementById("searchPlaylist").addEventListener("click", function () {
+      searchPlaylist(getSearchInput(), function (response) {
+        let musicTable = document.getElementById("musicTable");
+        musicTable.innerHTML = "";
 
-          let resultTable = document.createElement("table");
-          response.playlists.items.forEach((element) => {
-            let tr = document.createElement("tr");
-            tr.appendChild(createImageCell(element.images[0]?.url));
-            tr.appendChild(createCell(element.name));
-            tr.appendChild(createCell(element.description));
-            resultTable.appendChild(tr);
+        let resultTable = document.createElement("table");
+        response.playlists.items.forEach((element) => {
+          let tr = document.createElement("tr");
+          tr.appendChild(createImageCell(element.images[0]?.url));
+          tr.appendChild(createCell(element.name));
+          tr.appendChild(createCell(element.description));
+          resultTable.appendChild(tr);
 
-            tr.addEventListener("click", function () {
-              searchPlaylistInTrack(element.id, function (response) {
-                musicTable.innerHTML = "";
-                let resultTable = document.createElement("table");
+          tr.addEventListener("click", function () {
+            searchPlaylistInTrack(element.id, function (response) {
+              musicTable.innerHTML = "";
+              let resultTable = document.createElement("table");
 
-                response.tracks.items.forEach((song) => {
-                  if (song.track != null) {
-                    resultTable.appendChild(
-                      trackTableSetting(
-                        element.images[0]?.url,
-                        song.track.name,
-                        song.track.artists
-                      )
-                    );
-                  }
-                });
-                musicTable.appendChild(resultTable);
+              response.tracks.items.forEach((song) => {
+                if (song.track != null) {
+                  resultTable.appendChild(trackTableSetting(
+                    element.images[0]?.url, song.track.name, song.track.artists));
+                }
               });
+              musicTable.appendChild(resultTable);
             });
           });
-          musicTable.appendChild(resultTable);
         });
+        musicTable.appendChild(resultTable);
       });
+    });
 
-    document
-      .getElementById("featuredPlaylists")
-      .addEventListener("click", function () {
-        getFeaturedPlaylists(function (response) {
+    document.getElementById("featuredPlaylists").addEventListener("click", function () {
+      getFeaturedPlaylists(function (response) {
+        let musicTable = document.getElementById("musicTable");
+        musicTable.innerHTML = "";
+
+        let resultTable = document.createElement("table");
+        response.playlists.items.forEach((element) => {
+          let tr = document.createElement("tr");
+          tr.appendChild(createImageCell(element.images[0]?.url));
+          tr.appendChild(createCell(element.description));
+          resultTable.appendChild(tr);
+
+          tr.addEventListener("click", function () {
+            searchPlaylistInTrack(element.id, function (response) {
+              musicTable.innerHTML = "";
+              let resultTable = document.createElement("table");
+
+              response.tracks.items.forEach((song) => {
+                if (song.track != null) {
+                  resultTable.appendChild(trackTableSetting(
+                    element.images[0]?.url, song.track.name, song.track.artists));
+                }
+              });
+              musicTable.appendChild(resultTable);
+            });
+          });
+        });
+        musicTable.appendChild(resultTable);
+      });
+    });
+
+    document.getElementById("myPlaylist").addEventListener("click", function () {
+      openDatabase(function (db) {
+        getPlaylist(db, function (playlist) {
           let musicTable = document.getElementById("musicTable");
           musicTable.innerHTML = "";
 
           let resultTable = document.createElement("table");
-          response.playlists.items.forEach((element) => {
-            let tr = document.createElement("tr");
-            tr.appendChild(createImageCell(element.images[0]?.url));
-            tr.appendChild(createCell(element.description));
-            resultTable.appendChild(tr);
-
-            tr.addEventListener("click", function () {
-              searchPlaylistInTrack(element.id, function (response) {
-                musicTable.innerHTML = "";
-                let resultTable = document.createElement("table");
-
-                response.tracks.items.forEach((song) => {
-                  if (song.track != null) {
-                    resultTable.appendChild(
-                      trackTableSetting(
-                        element.images[0]?.url,
-                        song.track.name,
-                        song.track.artists
-                      )
-                    );
-                  }
-                });
-                musicTable.appendChild(resultTable);
-              });
-            });
-          });
+          for (let song of playlist) {
+            resultTable.appendChild(trackTableSetting(
+              song.image, song.title, song.artist));
+          }
           musicTable.appendChild(resultTable);
         });
       });
+    });
 
-    document
-      .getElementById("myPlaylist")
-      .addEventListener("click", function () {
-        openDatabase(function (db) {
-          getPlaylist(db, function (playlist) {
-            let musicTable = document.getElementById("musicTable");
-            musicTable.innerHTML = "";
+    document.getElementById("addToPlaylist").addEventListener("click", function () {
+      let playlist = [];
+      let checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
 
-            let resultTable = document.createElement("table");
-            for (let song of playlist) {
-              resultTable.appendChild(
-                trackTableSetting(song.image, song.title, song.artist)
-              );
+      checkboxes.forEach((checkbox) => {
+        let row = checkbox.parentElement.parentElement;
+        let image = row.cells[0].querySelector("img").src;
+        let title = row.cells[1].textContent;
+        let artist = row.cells[2].textContent;
+        playlist.push({ image: image, title: title, artist: artist });
+      });
+
+      openDatabase(function (db) {
+        getPlaylist(db, function (oldPlaylist) {
+          let newPlaylist = oldPlaylist;
+          
+          // 기존 플레이리스트에 없는 곡만 추가
+          for (let newSong of playlist) {
+            if (!oldPlaylist.find((song) => song.title === newSong.title && 
+                                            song.artist === newSong.artist)) {
+              newPlaylist.push(newSong);
             }
-            musicTable.appendChild(resultTable);
-          });
+          }
+          updatePlaylist(db, newPlaylist);
         });
       });
-
-    document
-      .getElementById("addToPlaylist")
-      .addEventListener("click", function () {
-        let checkboxes = document.querySelectorAll(
-          'input[type="checkbox"]:checked'
-        );
-
-        let playlist = [];
-        checkboxes.forEach((checkbox) => {
-          let row = checkbox.parentElement.parentElement;
-          let image = row.cells[0].querySelector("img").src;
-          let title = row.cells[1].textContent;
-          let artist = row.cells[2].textContent;
-          playlist.push({ image: image, title: title, artist: artist });
-        });
-
-        openDatabase(function (db) {
-          getPlaylist(db, function (oldPlaylist) {
-            let newPlaylist = oldPlaylist;
-
-            // 기존 플레이리스트에 없는 곡만 추가
-            for (let newSong of playlist) {
-              if (
-                !oldPlaylist.find(
-                  (song) =>
-                    song.title === newSong.title &&
-                    song.artist === newSong.artist
-                )
-              ) {
-                newPlaylist.push(newSong);
-              }
-            }
-
-            updatePlaylist(db, newPlaylist);
-          });
-        });
-      });
+    });
 
     document.getElementById("allCheck").addEventListener("click", function () {
       let checkboxes = document.querySelectorAll('input[type="checkbox"]');
@@ -386,57 +314,49 @@
       });
     });
 
-    document
-      .getElementById("removePlaylist")
-      .addEventListener("click", function () {
-        let checkboxes = document.querySelectorAll(
-          'input[type="checkbox"]:checked'
-        );
+    document.getElementById("removePlaylist").addEventListener("click", function () {
+      let playlist = [];
+      let checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
 
-        let playlist = [];
-        checkboxes.forEach((checkbox) => {
-          let row = checkbox.parentElement.parentElement;
-          let image = row.cells[0].querySelector("img").src;
-          let title = row.cells[1].textContent;
-          let artist = row.cells[2].textContent;
-          playlist.push({ image: image, title: title, artist: artist });
-        });
+      checkboxes.forEach((checkbox) => {
+        let row = checkbox.parentElement.parentElement;
+        let image = row.cells[0].querySelector("img").src;
+        let title = row.cells[1].textContent;
+        let artist = row.cells[2].textContent;
+        playlist.push({ image: image, title: title, artist: artist });
+      });
 
-        let openRequest = indexedDB.open("myDatabase", 1);
+      let openRequest = indexedDB.open("myDatabase", 1);
 
-        openRequest.onsuccess = function () {
-          let db = openRequest.result;
-          let playlists = db
-            .transaction("playlists", "readwrite")
-            .objectStore("playlists");
+      openRequest.onsuccess = function () {
+        let db = openRequest.result;
+        let playlists = db
+          .transaction("playlists", "readwrite")
+          .objectStore("playlists");
 
-          let getRequest = playlists.get("myPlaylist");
+        let getRequest = playlists.get("myPlaylist");
+        getRequest.onsuccess = function () {
+          let oldPlaylist = getRequest.result || [];
+          let newPlaylist = oldPlaylist.filter((song) => {
+            return !playlist.find((removeSong) => song.title === removeSong.title && 
+                                                  song.artist === removeSong.artist);
+          });
 
-          getRequest.onsuccess = function () {
-            let oldPlaylist = getRequest.result || [];
-            let newPlaylist = oldPlaylist.filter((song) => {
-              return !playlist.find(
-                (removeSong) =>
-                  song.title === removeSong.title &&
-                  song.artist === removeSong.artist
-              );
-            });
-
-            let putRequest = playlists.put(newPlaylist, "myPlaylist");
-
-            putRequest.onsuccess = function () {
-              alert("Removed from Playlist");
-            };
-
-            putRequest.onerror = function () {
-              console.error("Error: ", putRequest.error);
-            };
+          let putRequest = playlists.put(newPlaylist, "myPlaylist");
+          putRequest.onsuccess = function () {
+            alert("Removed from Playlist");
           };
 
-          getRequest.onerror = function () {
-            console.error("Error: ", getRequest.error);
+          putRequest.onerror = function () {
+            console.error("Error: ", putRequest.error);
           };
         };
-      });
+
+        getRequest.onerror = function () {
+          console.error("Error: ", getRequest.error);
+        };
+      };
+    });
   </script>
+</body>
 </html>
