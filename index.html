@@ -62,7 +62,6 @@
 
     function openDatabase(callback) {
       let openRequest = indexedDB.open("myDatabase", 1);
-
       openRequest.onupgradeneeded = function () {
         let db = openRequest.result;
         if (!db.objectStoreNames.contains("playlists")) {
@@ -294,7 +293,7 @@
       openDatabase(function (db) {
         getPlaylist(db, function (oldPlaylist) {
           let newPlaylist = oldPlaylist;
-          
+
           // 기존 플레이리스트에 없는 곡만 추가
           for (let newSong of playlist) {
             if (!oldPlaylist.find((song) => song.title === newSong.title && 
@@ -327,7 +326,6 @@
       });
 
       let openRequest = indexedDB.open("myDatabase", 1);
-
       openRequest.onsuccess = function () {
         let db = openRequest.result;
         let playlists = db
