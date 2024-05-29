@@ -247,8 +247,8 @@
       .getElementById("searchPlaylist")
       .addEventListener("click", function () {
         searchPlaylist(getSearchInput(), function (response) {
-          musicTable.innerHTML = "";
           let musicTable = document.getElementById("musicTable");
+          musicTable.innerHTML = "";
 
           let resultTable = document.createElement("table");
           response.playlists.items.forEach((element) => {
