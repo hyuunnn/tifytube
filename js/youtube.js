@@ -1,5 +1,5 @@
 let apiServers = [
-  //   "https://pipedapi.kavin.rocks/", very slow
+  "https://pipedapi.kavin.rocks/",
   "https://pipedapi.leptons.xyz/",
   "https://pipedapi.r4fo.com/",
   "https://pipedapi.darkness.services/",
