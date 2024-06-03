@@ -85,3 +85,7 @@ function searchArtistInTrack(id, callback) {
 function getFeaturedPlaylists(callback) {
   spotifyAPI(`https://api.spotify.com/v1/browse/featured-playlists`, callback);
 }
+
+function getRelatedArtists(artistId, callback) {
+  spotifyAPI(`https://api.spotify.com/v1/artists/${artistId}/related-artists`, callback);
+}

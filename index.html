@@ -29,6 +29,7 @@
         <button id="searchPlaylist">Search Playlist</button>
         <button id="featuredPlaylists">Featured Playlists</button>
         <button id="myPlaylist">My Playlist</button>
+        <button id="artistSubmit">Get Recommendations</button>
       </div>
     </div>
 
@@ -259,6 +260,48 @@
           });
         });
         musicTable.appendChild(resultTable);
+      });
+    });
+
+    document.getElementById("artistSubmit").addEventListener("click", function () {
+      let searchInput = getSearchInput();
+      if (searchInput == null) return;
+
+      let artistNames = searchInput.split(",").map(name => name.trim());
+      let musicTable = document.getElementById("musicTable");
+      musicTable.innerHTML = "";
+
+      artistNames.forEach((artistName) => {
+        searchArtist(artistName, function (response) {
+          let artistId = response.artists.items[0].id
+          getRelatedArtists(artistId, function (response) {
+            let resultTable = document.createElement("table");
+
+            response.artists.forEach((element) => {
+              let tr = document.createElement("tr");
+              tr.appendChild(createImageCell(element.images[0]?.url));
+              tr.appendChild(createCell(element.name));
+              resultTable.appendChild(tr);
+
+              tr.addEventListener("click", function () {
+                searchArtistInTrack(element.id, function (response) {
+                  musicTable.innerHTML = "";
+                  let resultTable = document.createElement("table");
+
+                  response.tracks.forEach((song) => {
+                    resultTable.appendChild(trackTableSetting(
+                      element.images[0]?.url, song.name, song.artists));
+                  });
+                  musicTable.appendChild(resultTable);
+                });
+              });
+            });
+            let valueElement = document.createElement("h3");
+            valueElement.textContent = artistName;
+            musicTable.appendChild(valueElement);
+            musicTable.appendChild(resultTable);
+          });
+        });
       });
     });
 
