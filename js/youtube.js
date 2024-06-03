@@ -53,7 +53,7 @@ function loadVideo(singerName, songName) {
             break;
           }
         }
-        // 노래를 찾지 못한 경우, 첫 번째 항목으로 재생
+        // 특정 키워드가 포함되어 있는 노래를 찾지 못한 경우, 첫 번째 항목으로 재생
         if (!found) {
           let videoUrl = response.items[0].url;
           let videoId = videoUrl.split("v=")[1];
