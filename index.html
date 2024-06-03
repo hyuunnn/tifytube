@@ -31,7 +31,7 @@
         <button id="myPlaylist">My Playlist</button>
         <button id="relatedArtists">Related Artists</button>
       </div>
-    <div id="artists"></div>
+    <div id="result"></div>
     </div>
 
     <div class="content">
@@ -266,8 +266,8 @@
 
     document.getElementById("relatedArtists").addEventListener("click", function () {
       searchArtist(getSearchInput(), function (response) {
-        let artistsElement = document.getElementById("artists");
-        artistsElement.innerHTML = "";
+        let resultElement = document.getElementById("result");
+        resultElement.innerHTML = "";
 
         let artistId = response.artists.items[0].id;
         getRelatedArtists(artistId, function (response) {
@@ -294,7 +294,7 @@
               });
             });
           });
-          artistsElement.appendChild(resultTable);
+          resultElement.appendChild(resultTable);
         });
       });
     });
