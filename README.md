@@ -1,5 +1,11 @@
 # tifytube
 
+Spotify & Youtube Music Player
+
 <img src="img/1.png" />
 
-Spotify & Youtube Music Player
+# Usage
+
+1. Run "index.html".
+2. Click "Spotify Developer Dashboard" to create an app.
+3. Set up "CLIENT ID" and "CLIENT SECRET".
